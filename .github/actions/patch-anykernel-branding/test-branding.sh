@@ -1,37 +1,82 @@
 #!/system/bin/sh
-# 测试自定义 AnyKernel3 品牌输出
+# 模拟 anykernel.sh 格式，测试自定义品牌输出
 # 在 Recovery / Termux / Linux 下均可运行
 
-# 直接读取 prop，不存在则输出占位
-safe_getprop() {
-  if getprop "$1" >/dev/null 2>&1; then
-    getprop "$1"
-  else
-    echo "[未检测到]"
-  fi
-}
+# mock Recovery 函数，非 Recovery 环境也能直接看到输出
+ui_print() { echo "$@"; }
+abort() { echo "$@"; exit 1; }
+split_boot() { :; }
+unpack_ramdisk() { :; }
+write_boot() { :; }
+flash_boot() { :; }
+SPLITIMG="/tmp/splitimg"
+mkdir -p "$SPLITIMG"
 
-# 读取内核版本
-kernel_version() {
-  if [ -r /proc/version ]; then
-    awk '{print $3}' /proc/version
-  else
-    echo "[未检测到]"
-  fi
-}
+### AnyKernel3 Ramdisk Mod Script
+## osm0sis @ xda-developers
+### AnyKernel setup
+# global properties
+properties() { '
+kernel.string=酷狗贼 Vivo/IQOO 独家定制内核 by 酷安@酷狗贼
+do.devicecheck=0
+do.modules=0
+do.systemless=0
+do.cleanup=1
+do.cleanuponabort=0
+do.check_boot_version=0
+device.name1=
+device.name2=
+device.name3=
+device.name4=
+device.name5=
+supported.versions=
+supported.patchlevels=
+supported.vendorpatchlevels=
+'; } # end properties
 
-echo " "
-echo "欢迎使用 酷狗贼 Vivo/IQOO 独家定制内核"
-echo "本内核为 酷安@酷狗贼 定制内核"
-echo "酷狗贼 独家内核 禁止任何形式的帮刷/代刷"
-echo "QQ:1423760291"
-echo " "
-echo "当前时间: $(date '+%Y-%m-%d %H:%M:%S')"
-echo "机型名: $(safe_getprop ro.vivo.market.name)"
-echo "系统版本: $(safe_getprop ro.build.version.bbk)"
-echo "内核版本: $(kernel_version)"
-echo " "
-echo "当前刷入的内核版本为: $(kernel_version)"
-echo " "
-echo "请你生活玩机顺利，不下载执行未知来源的模块和.sh"
-echo " "
+### AnyKernel install
+## boot shell variables
+block=boot
+is_slot_device=auto
+ramdisk_compression=auto
+patch_vbmeta_flag=auto
+no_magisk_check=1
+
+# GKI check
+kernel_version=$(cat /proc/version | awk -F '-' '{print $1}' | awk '{print $3}')
+case $kernel_version in
+ 5.10*) ksu_supported=true ;;
+ 5.15*) ksu_supported=true ;;
+ 6.1*) ksu_supported=true ;;
+ 6.6*) ksu_supported=true ;;
+ 6.12*) ksu_supported=true ;;
+ *) ksu_supported=false ;;
+esac
+ui_print " "
+ui_print " -> 酷狗贼内核支持状态: $ksu_supported"
+$ksu_supported || abort " -> Non-GKI device, abort."
+
+# boot install
+split_boot
+if [ -f "$SPLITIMG/ramdisk.cpio" ]; then
+  unpack_ramdisk
+  write_boot
+else
+  flash_boot
+fi
+
+ui_print " "
+ui_print "欢迎使用 酷狗贼 Vivo/IQOO 独家定制内核"
+ui_print "本内核为 酷安@酷狗贼 定制内核"
+ui_print "酷狗贼 独家内核 禁止任何形式的帮刷/代刷"
+ui_print "QQ:1423760291"
+ui_print " "
+ui_print "当前时间: $(date '+%Y-%m-%d %H:%M:%S')"
+ui_print "机型名: $(getprop ro.vivo.market.name)"
+ui_print "系统版本: $(getprop ro.build.version.bbk)"
+ui_print "内核版本: $(cat /proc/version | awk '{print $3}')"
+ui_print " "
+ui_print "当前刷入的内核版本为: $(cat /proc/version | awk '{print $3}')"
+ui_print " "
+ui_print "请你生活玩机顺利，不下载执行未知来源的模块和.sh"
+ui_print " "
