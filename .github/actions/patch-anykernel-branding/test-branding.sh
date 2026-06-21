@@ -12,8 +12,35 @@ flash_boot() { :; }
 SPLITIMG="/tmp/splitimg"
 AKHOME="/tmp/akhome"
 mkdir -p "$SPLITIMG" "$AKHOME"
-# 构造一个假 Image，用于测试“正在刷入的内核版本”读取
+# 构造一个假 Image，用于测试"正在刷入的内核版本"读取
 printf 'Linux version 6.1.141-android14-test-flash (build-user@build-host) (Clang something)\n' > "$AKHOME/Image"
+
+get_root_type() {
+    if [ -f /data/adb/magisk/util_functions.sh ]; then
+        local magisk_ver=$(magisk -v 2>/dev/null | head -n 1)
+        echo "Magisk (${magisk_ver})"
+    elif [ -f /data/adb/ksud ]; then
+        local ksu_ver=$(ksud -V 2>/dev/null | head -n 1)
+        echo "KernelSU (${ksu_ver})"
+    elif [ -f /data/adb/apatch ]; then
+        local apatch_ver=$(apatch -v 2>/dev/null | head -n 1)
+        echo "APatch (${apatch_ver})"
+    else
+        echo "未知Root环境"
+    fi
+}
+get_device_brand() {
+    getprop ro.product.brand
+}
+get_vivo_phone() {
+    local brand=$(get_device_brand)
+    case "$brand" in
+      *vivo*|*iqoo*) dumpsys content 2>/dev/null | grep 'BBKOnLineService' | awk '{print $2}' | head -n 1 ;;
+    esac
+}
+get_oplus_phone() {
+    :
+}
 
 ### AnyKernel3 Ramdisk Mod Script
 ## osm0sis @ xda-developers
@@ -68,6 +95,12 @@ else
     flash_boot
 fi
 
+ui_print " "
+ui_print "－ ●Root 环境：$(get_root_type) ●"
+ui_print "－ ●欢迎使用本模块！●"
+phone=$(get_vivo_phone)
+[ -z "$phone" ] && phone=$(get_oplus_phone)
+[ -n "$phone" ] && ui_print "－ ●您的手机号：$phone ●"
 ui_print " "
 ui_print "欢迎使用 酷狗贼 Vivo/IQOO 独家定制内核"
 ui_print "本内核为 酷安@酷狗贼 定制内核"
