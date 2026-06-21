@@ -10,7 +10,10 @@ unpack_ramdisk() { :; }
 write_boot() { :; }
 flash_boot() { :; }
 SPLITIMG="/tmp/splitimg"
-mkdir -p "$SPLITIMG"
+AKHOME="/tmp/akhome"
+mkdir -p "$SPLITIMG" "$AKHOME"
+# 构造一个假 Image，用于测试“正在刷入的内核版本”读取
+printf 'Linux version 6.1.141-android14-test-flash (build-user@build-host) (Clang something)\n' > "$AKHOME/Image"
 
 ### AnyKernel3 Ramdisk Mod Script
 ## osm0sis @ xda-developers
@@ -76,7 +79,9 @@ ui_print "机型名: $(getprop ro.vivo.market.name)"
 ui_print "系统版本: $(getprop ro.build.version.bbk)"
 ui_print "内核版本: $(cat /proc/version | awk '{print $3}')"
 ui_print " "
-ui_print "当前刷入的内核版本为: $(cat /proc/version | awk '{print $3}')"
+flashed_kernel=$(strings "$AKHOME/Image" 2>/dev/null | grep -m1 '^Linux version ' | awk '{print $3}')
+[ -z "$flashed_kernel" ] && flashed_kernel=$(cat /proc/version | awk '{print $3}')
+ui_print "当前刷入的内核版本为: $flashed_kernel"
 ui_print " "
 ui_print "请你生活玩机顺利，不下载执行未知来源的模块和.sh"
 ui_print " "
