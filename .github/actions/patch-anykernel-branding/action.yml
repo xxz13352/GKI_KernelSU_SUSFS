@@ -86,7 +86,7 @@ runs:
             'ui_print "－ ●您的手机号: $phone ●"',
             'ui_print " "',
             "flashed_kernel=$(strings \"$AKHOME/Image\" 2>/dev/null | grep -m1 '^Linux version ' | awk '{print $3}')",
-            '[ -z "$flashed_kernel" ] && flashed_kernel=$(cat /proc/version | awk '\''{print $3}'\'')',
+            "[ -z \"$flashed_kernel\" ] && flashed_kernel=$(cat /proc/version | awk '{print $3}')",
             '[ -z "$flashed_kernel" ] && flashed_kernel="未获取到"',
             'ui_print "－ ●当前刷入的内核版本为: $flashed_kernel ●"',
             'ui_print " "',
