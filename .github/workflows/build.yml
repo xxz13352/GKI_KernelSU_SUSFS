@@ -74,7 +74,10 @@ jobs:
       uses: ./.github/actions/setup-build-environment
       env:
         BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
-          
+
+    - name: Patch AnyKernel3 Branding
+      uses: ./.github/actions/patch-anykernel-branding
+
     - name: Download Kernel Repository
       uses: ./.github/actions/download-kernel
       with:

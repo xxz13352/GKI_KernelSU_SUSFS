@@ -1,0 +1,61 @@
+name: 'Patch AnyKernel3 Branding'
+description: 'Replace WildKernels branding in AnyKernel3 anykernel.sh with custom branding'
+
+runs:
+  using: composite
+  steps:
+    - name: Replace WildKernels branding
+      shell: bash
+      working-directory: ${{ github.workspace }}/AnyKernel3
+      run: |
+        python3 << 'PYEOF'
+        import re
+        from pathlib import Path
+
+        f = Path("anykernel.sh")
+        text = f.read_text()
+
+        # Replace kernel version string shown in recovery
+        text = re.sub(
+            r'^kernel\.string=.*$',
+            'kernel.string=酷狗贼 Vivo/IQOO 独家定制内核 by 酷安@酷狗贼',
+            text,
+            flags=re.MULTILINE
+        )
+
+        # Replace the GKI support status message
+        text = text.replace(
+            'ui_print " -> Wild Kernels Supported: $ksu_supported"',
+            'ui_print " -> 酷狗贼内核支持状态: $ksu_supported"'
+        )
+
+        # New branding block to show after flashing
+        new_block = '\n'.join([
+            'ui_print " "',
+            'ui_print "欢迎使用 酷狗贼 Vivo/IQOO 独家定制内核"',
+            'ui_print "本内核为 酷安@酷狗贼 定制内核"',
+            'ui_print "酷狗贼 独家内核 禁止任何形式的帮刷/代刷"',
+            'ui_print "QQ:1423760291"',
+            'ui_print " "',
+            "ui_print \"当前时间: $(date '+%Y-%m-%d %H:%M:%S')\"",
+            "ui_print \"机型名: $(getprop ro.vivo.market.name)\"",
+            "ui_print \"系统版本: $(getprop ro.build.version.bbk)\"",
+            "ui_print \"内核版本: $(cat /proc/version | awk '{print $3}')\"",
+            'ui_print " "',
+            "ui_print \"当前刷入的内核版本为: $(cat /proc/version | awk '{print $3}')\"",
+            'ui_print " "',
+            'ui_print "请你生活玩机顺利，不下载执行未知来源的模块和.sh"',
+            'ui_print " "',
+            ''
+        ])
+
+        # Replace the blank line + WildKernels branding block to end of file
+        text = re.sub(
+            r'ui_print " "\nui_print "WildKernels Telegram Channel:".*',
+            new_block,
+            text,
+            flags=re.DOTALL
+        )
+
+        f.write_text(text)
+        PYEOF
