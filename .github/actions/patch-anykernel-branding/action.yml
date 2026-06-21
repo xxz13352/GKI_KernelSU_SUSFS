@@ -25,8 +25,8 @@ runs:
 
         # Replace the GKI support status message
         text = text.replace(
-            'ui_print " -> Wild Kernels Supported: $ksu_supported"',
-            'ui_print " -> 酷狗贼内核支持状态: $ksu_supported"'
+            'ui_print " " "  -> Wild Kernels Supported: $ksu_supported"',
+            'ui_print " " "  -> 酷狗贼内核支持状态: $ksu_supported"'
         )
 
         # New branding block to show after flashing

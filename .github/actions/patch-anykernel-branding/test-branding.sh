@@ -52,17 +52,17 @@ case $kernel_version in
  6.12*) ksu_supported=true ;;
  *) ksu_supported=false ;;
 esac
-ui_print " "
-ui_print " -> 酷狗贼内核支持状态: $ksu_supported"
-$ksu_supported || abort " -> Non-GKI device, abort."
+ui_print " " "  -> 酷狗贼内核支持状态: $ksu_supported"
+$ksu_supported || abort "  -> Non-GKI device, abort."
 
 # boot install
 split_boot
+
 if [ -f "$SPLITIMG/ramdisk.cpio" ]; then
-  unpack_ramdisk
-  write_boot
+    unpack_ramdisk
+    write_boot
 else
-  flash_boot
+    flash_boot
 fi
 
 ui_print " "
